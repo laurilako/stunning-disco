@@ -295,14 +295,20 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #util.raiseNotDefined()
+        return (self.startingPosition, (False, False, False, False))
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #util.raiseNotDefined()
+        isGoal = True
+        for i in range(4):
+            if not state[1][i]:
+                isGoal = False
+        return isGoal
 
     def getSuccessors(self, state):
         """
@@ -314,7 +320,6 @@ class CornersProblem(search.SearchProblem):
             state, 'action' is the action required to get there, and 'stepCost'
             is the incremental cost of expanding to that successor
         """
-
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
@@ -325,7 +330,16 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
-
+            #util.raiseNotDefined()
+            x, y = state[0]
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall:
+                newCorner = list(state[1])
+                if (nextx, nexty) in self.corners:
+                    newCorner[self.corners.index((nextx, nexty))] = True
+                successors.append((((nextx, nexty), tuple(newCorner)), action, 1))
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
@@ -360,7 +374,50 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    #util.raiseNotDefined()
+    position, corner = state
+    if problem.isGoalState(state):
+        return 0
+    else:
+        # Find the nearest corner
+        minDist = 999999
+        for i in range(4):
+            if not corner[i]:
+                dist = util.manhattanDistance(position, corners[i])
+                if dist < minDist:
+                    minDist = dist
+
+        # Find the second nearest corner
+        minDist2 = 999999
+        for i in range(4):
+            if not corner[i]:
+                dist = util.manhattanDistance(position, corners[i])
+                if dist < minDist2 and dist > minDist:
+                    minDist2 = dist
+
+        # Find the third nearest corner
+        minDist3 = 999999
+        for i in range(4):
+            if not corner[i]:
+                dist = util.manhattanDistance(position, corners[i])
+                if dist < minDist3 and dist > minDist2:
+                    minDist3 = dist
+
+        # Find the fourth nearest corner
+        minDist4 = 999999
+        for i in range(4):
+            if not corner[i]:
+                dist = util.manhattanDistance(position, corners[i])
+                if dist < minDist4 and dist > minDist3:
+                    minDist4 = dist
+
+        sum1 = minDist + minDist2 + minDist3 + minDist4
+        sum2 = minDist + minDist2 + minDist3
+        sum3 = minDist + minDist2
+        sum4 = minDist
+        
+        return min(sum1, sum2, sum3, sum4)
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
