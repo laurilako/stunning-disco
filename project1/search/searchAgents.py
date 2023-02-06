@@ -375,48 +375,36 @@ def cornersHeuristic(state, problem):
 
     "*** YOUR CODE HERE ***"
     #util.raiseNotDefined()
-    position, corner = state
-    if problem.isGoalState(state):
+    # nykyinen sijainti
+    x, y = state[0]	
+    # kulmat joissa ei vielä ole vierailtu
+    unvisited = []
+    for i in range(4):
+        if not state[1][i]:
+            unvisited.append(corners[i])
+    # jos käyty kaikissa niin ret 0
+    if len(unvisited) == 0:
         return 0
+    # jos vain yksi käymättä niin ret etäisyys siihen 
+    if len(unvisited) == 1:
+        return util.manhattanDistance((x, y), unvisited[0])
+    # jos kaksi niin ret etäisyys siihen + etäisyys toiseen
     else:
-        # Find the nearest corner
+        # lähimmän kulman etäisyys
         minDist = 999999
-        for i in range(4):
-            if not corner[i]:
-                dist = util.manhattanDistance(position, corners[i])
-                if dist < minDist:
-                    minDist = dist
-
-        # Find the second nearest corner
+        for corner in unvisited:
+            dist = util.manhattanDistance((x, y), corner)
+            if dist < minDist:
+                minDist = dist
+        # lähimmän kulman etäisyys toiseen kulmaan
         minDist2 = 999999
-        for i in range(4):
-            if not corner[i]:
-                dist = util.manhattanDistance(position, corners[i])
-                if dist < minDist2 and dist > minDist:
-                    minDist2 = dist
-
-        # Find the third nearest corner
-        minDist3 = 999999
-        for i in range(4):
-            if not corner[i]:
-                dist = util.manhattanDistance(position, corners[i])
-                if dist < minDist3 and dist > minDist2:
-                    minDist3 = dist
-
-        # Find the fourth nearest corner
-        minDist4 = 999999
-        for i in range(4):
-            if not corner[i]:
-                dist = util.manhattanDistance(position, corners[i])
-                if dist < minDist4 and dist > minDist3:
-                    minDist4 = dist
-
-        sum1 = minDist + minDist2 + minDist3 + minDist4
-        sum2 = minDist + minDist2 + minDist3
-        sum3 = minDist + minDist2
-        sum4 = minDist
-        
-        return min(sum1, sum2, sum3, sum4)
+        for corner1 in unvisited:
+            for corner2 in unvisited:
+                if corner1 != corner2:
+                    dist = util.manhattanDistance(corner1, corner2)
+                    if dist < minDist2:
+                        minDist2 = dist
+        return minDist + minDist2
 
 
 class AStarCornersAgent(SearchAgent):
@@ -511,7 +499,18 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+
+    ruokaa = foodGrid.asList()
+    # jos ruokaa ei ole niin 0
+    if len(ruokaa) == 0:
+        return 0
+    
+    heuristic = 0
+    for x in ruokaa:
+        if util.manhattanDistance(position, x) > heuristic:
+            heuristic = util.manhattanDistance(position, x)
+    return heuristic
+    # Search nodes expanded: 9551 
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -542,7 +541,8 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #util.raiseNotDefined()
+        return search.bfs(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -578,8 +578,12 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
+        #util.raiseNotDefined()
+        if self.food[x][y] == True:
+            return True
+        else:
+            return False
+            
 def mazeDistance(point1, point2, gameState):
     """
     Returns the maze distance between any two points, using the search functions
